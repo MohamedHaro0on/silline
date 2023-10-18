@@ -1,0 +1,12 @@
+.card{
+    position: relative;
+}
+.bestSeller{
+    position: absolute !important;
+    top : 0px ;
+    background-color: #CA0B00;
+    left : 0px ;
+    padding : 5px;
+    font-weight: bold;
+    color : #fff ;
+}

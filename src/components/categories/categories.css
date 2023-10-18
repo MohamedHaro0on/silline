@@ -1,0 +1,43 @@
+.navbarContainer{
+    width : 100% ;
+    position: relative;
+    z-index : 2 ; 
+    margin-bottom : 20px ;
+}
+.navbarContainer::after{
+    position : absolute ; 
+    content : "" ;
+    width : 100% ; 
+    height : 170px ; 
+    left : 10px; 
+    right : 10px ;
+    bottom : 20px ;
+    background-color : rgba(241,156 ,66, 0.3)	;
+    border-radius : 10px ;
+}
+
+.carousel{
+    width : 100% ; 
+    padding : 10px ;
+    position : relative ; 
+    z-index : 100 ; 
+    align-items: stretch ;
+    display: flex;
+    justify-content: center;
+}
+.carousel ul {
+    transition: all .5s ease 0s !important;
+}
+
+.card{
+    background-color: transparent !important;
+    text-align: center;
+    min-height : 200px;
+    width: 100% !important;
+}
+.card img {
+    width : 100% !important;
+}
+.react-multiple-carousel__arrow--left  , .react-multiple-carousel__arrow--right{
+    top : 50% ;
+}
