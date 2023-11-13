@@ -6,8 +6,7 @@ const AllContextsProvider = ({ children }) => {
   return (
     <CategroiesContextProvider>
       <MenueContextProvider>
-        {/* <OrdersContextProvider>{children}</OrdersContextProvider> */}
-        {children}
+        <OrdersContextProvider>{children}</OrdersContextProvider>
       </MenueContextProvider>
     </CategroiesContextProvider>
   );

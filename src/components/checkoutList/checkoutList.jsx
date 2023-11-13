@@ -1,4 +1,4 @@
-import { Box, Button, Grid, TextField, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Grid, Modal, TextField, Typography } from "@mui/material";
 import React, { useContext } from "react";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
@@ -9,6 +9,19 @@ import "./checkoutList.css";
 import noOrders from "../../assets/images/ordersList.png";
 import OrdersContext from "../../context/orders";
 import API from "../../apiEndPoint";
+import orderSubmitted from "../../assets/images/orderSubmitted.png";
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+  textAlign: "center",
+};
 
 const CheckOutList = () => {
   const {
@@ -17,6 +30,10 @@ const CheckOutList = () => {
     deCreamentQuantity,
     totalPrice,
     submitOrder,
+    open,
+    handleClose,
+    orderNumber , 
+    loading ,
   } = useContext(OrdersContext);
   const formik = useFormik({
     initialValues: {
@@ -41,6 +58,28 @@ const CheckOutList = () => {
           alt="No orders to view"
           src={noOrders}
         />
+         <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style}>
+            <Typography id="modal-modal-title" variant="h5" component="h2" fontWeight = "bolder" marginBottom={4}>
+              your order id : {orderNumber}
+            </Typography>
+            <Box
+              component="img"
+              sx={{
+                height: 200,
+                maxHeight: { xs: 233, md: 167 },
+                maxWidth: { xs: 350, md: 250 },
+              }}
+              alt="order was submitted"
+              src={orderSubmitted}
+            />
+          </Box>
+        </Modal>
       </Grid>
     );
   } else {
@@ -52,7 +91,7 @@ const CheckOutList = () => {
         <form onSubmit={formik.handleSubmit}>
           {orders &&
             orders.map(
-              ({ ItemName, Image, AdminItemID, Description, quantity }) => {
+              ({ ItemName, Image, MenuItemID, Description, quantity }) => {
                 return (
                   <Grid
                     item
@@ -60,7 +99,7 @@ const CheckOutList = () => {
                     sm={12}
                     md={12}
                     lg={12}
-                    key={AdminItemID}
+                    key={MenuItemID}
                     className="menueItem"
                   >
                     <Grid container justifyContent={"space-around"}>
@@ -104,7 +143,7 @@ const CheckOutList = () => {
                           textAlign={"center"}
                         >
                           <Button
-                            onClick={() => inCreamentQuantity(AdminItemID)}
+                            onClick={() => inCreamentQuantity(MenuItemID)}
                           >
                             <KeyboardArrowUpIcon />
                           </Button>
@@ -112,7 +151,7 @@ const CheckOutList = () => {
                           <Typography variant="h5">{quantity}</Typography>
 
                           <Button
-                            onClick={() => deCreamentQuantity(AdminItemID)}
+                            onClick={() => deCreamentQuantity(MenuItemID)}
                           >
                             <KeyboardArrowDownIcon />
                           </Button>
@@ -124,7 +163,7 @@ const CheckOutList = () => {
               }
             )}
 
-          <Grid container marginTop = {4} paddingLeft ={2}>
+          <Grid container marginTop={4} paddingLeft={2}>
             <Grid
               item
               xs={12}
@@ -136,7 +175,7 @@ const CheckOutList = () => {
             >
               <TextField
                 type="checkbox"
-                name = {"takeAway"}
+                name={"takeAway"}
                 onChange={formik.handleChange}
                 className="checkbox"
               />
@@ -163,12 +202,15 @@ const CheckOutList = () => {
             </Grid>
           </Grid>
 
-          <Grid item xs = {12} lg ={12}>
-            <Button fullWidth color="warning" variant="outlined" onClick = {formik.handleSubmit}>
-              Submit Order 
+          <Grid item xs={12} lg={12}>
+            <Button fullWidth color="warning" variant="outlined" onClick={formik.handleSubmit}>
+              Submit Order
+              {loading && <CircularProgress />}
             </Button>
           </Grid>
         </form>
+
+       
       </Grid>
     );
   }

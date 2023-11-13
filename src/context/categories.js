@@ -12,6 +12,7 @@ export const CategroiesContextProvider = ({ children }) => {
     axios
       .get("/selectAllCategory.php")
       .then((res) => {
+        console.log(res.data);
         setCategories(res.data);
       })
       .catch((err) => {});

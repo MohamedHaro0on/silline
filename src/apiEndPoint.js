@@ -1,2 +1,2 @@
-const API = "http://localhost:8080//php"; 
+const API = "https://silinbakeri.net/php"; 
 export default API ;

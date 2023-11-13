@@ -31,20 +31,20 @@ const Menue = () => {
   }, [cat, menue]);
 
   return (
-    <Grid container>
+    <Grid container display = "flex" alignItems={"stretch"}>
       {displayedItems.length > 0 &&
         displayedItems.map(
           ({
             ItemName,
             Image,
             bestSeller,
-            AdminItemID,
+            MenuItemID,
             Price,
             best_seller,
           }) => {
             return (
               <Grid
-                key={AdminItemID}
+                key={MenuItemID + ItemName}
                 item
                 xs={12}
                 sm={12}
@@ -53,11 +53,13 @@ const Menue = () => {
                 xl={4}
                 padding={4}
                 alignItems={"stretch"}
+                display={"flex"}
+                className = "cardContainer"
               >
                 <Button
                   color="warning"
                   fullWidth
-                  onClick={() => ordersHandler(AdminItemID)}
+                  onClick={() => ordersHandler(MenuItemID)}
                 >
                   <Card className="card">
                     <CardMedia
@@ -65,10 +67,10 @@ const Menue = () => {
                       image={`${API}/uploads/${Image}`}
                       title={ItemName}
                     />
-                    <CardContent>
+                    <CardContent className= "cardContent">
                       <Grid container>
                         <Grid item xs={9} sm={9} md={9} lg={9}>
-                          <Typography gutterBottom variant="h6" component="div">
+                          <Typography gutterBottom variant="h6" component="h5" textAlign={"left"}>
                             {ItemName}
                           </Typography>
                         </Grid>
@@ -83,7 +85,7 @@ const Menue = () => {
                           </Typography>
                         </Grid>
                       </Grid>
-                      {Boolean(best_seller) && (
+                      {Boolean(bestSeller) && (
                         <Typography
                           className="bestSeller"
                           varient="h5"

@@ -1,5 +1,15 @@
 .card{
     position: relative;
+
+}
+
+.cardContainer{
+    width : 90% ;
+    transition: transform .5s; /* Animation */
+
+}
+.cardContainer:hover{
+    transform: scale(1.1); 
 }
 .bestSeller{
     position: absolute !important;

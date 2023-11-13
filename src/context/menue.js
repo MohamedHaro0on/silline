@@ -7,16 +7,20 @@ export const MenueContextProvider = ({ children }) => {
   const [menue, setMenue] = useState([]);
   
   useEffect(() => {
+    getMenue();
+  }, []);
+  const getMenue = () =>{
     axios
-      .get("/SelectAllitem.php")
+      .get("/SelectALLitemMenu.php")
       .then((res) => {
+        console.log(res.data);
         setMenue(res.data);
       })
       .catch((err) => {
       });
-  }, []);
+  }
   return (
-    <MenueContext.Provider value={{ menue, setMenue }}>
+    <MenueContext.Provider value={{ menue, setMenue , getMenue  }}>
       {children}
     </MenueContext.Provider>
   );
