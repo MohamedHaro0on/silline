@@ -1,4 +1,12 @@
-import { Box, Button, CircularProgress, Grid, Modal, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Grid,
+  Modal,
+  TextField,
+  Typography,
+} from "@mui/material";
 import React, { useContext } from "react";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
@@ -10,30 +18,35 @@ import noOrders from "../../assets/images/ordersList.png";
 import OrdersContext from "../../context/orders";
 import API from "../../apiEndPoint";
 import orderSubmitted from "../../assets/images/orderSubmitted.png";
+
+
+
 const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
   width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
+  bgcolor: "background.paper",
+  border: "2px solid #000",
   boxShadow: 24,
   p: 4,
   textAlign: "center",
 };
 
+
+
 const CheckOutList = () => {
   const {
-    orders,
+    order,
     inCreamentQuantity,
     deCreamentQuantity,
     totalPrice,
     submitOrder,
     open,
     handleClose,
-    orderNumber , 
-    loading ,
+    orderNumber,
+    loading,
   } = useContext(OrdersContext);
   const formik = useFormik({
     initialValues: {
@@ -47,7 +60,7 @@ const CheckOutList = () => {
   });
 
   // displayed when there are no orders .
-  if (!orders.length) {
+  if (!order.length) {
     return (
       <Grid container alignItems={"center"} minHeight={"70vh"}>
         <Box
@@ -58,14 +71,20 @@ const CheckOutList = () => {
           alt="No orders to view"
           src={noOrders}
         />
-         <Modal
+        <Modal
           open={open}
           onClose={handleClose}
           aria-labelledby="modal-modal-title"
           aria-describedby="modal-modal-description"
         >
           <Box sx={style}>
-            <Typography id="modal-modal-title" variant="h5" component="h2" fontWeight = "bolder" marginBottom={4}>
+            <Typography
+              id="modal-modal-title"
+              variant="h5"
+              component="h2"
+              fontWeight="bolder"
+              marginBottom={4}
+            >
               your order id : {orderNumber}
             </Typography>
             <Box
@@ -89,8 +108,8 @@ const CheckOutList = () => {
           <Typography variant="h4"> Your Cart </Typography>
         </Grid>
         <form onSubmit={formik.handleSubmit}>
-          {orders &&
-            orders.map(
+          {order &&
+            order.map(
               ({ ItemName, Image, MenuItemID, Description, quantity }) => {
                 return (
                   <Grid
@@ -203,14 +222,21 @@ const CheckOutList = () => {
           </Grid>
 
           <Grid item xs={12} lg={12}>
-            <Button fullWidth color="warning" variant="outlined" onClick={formik.handleSubmit}>
-              Submit Order
-              {loading && <CircularProgress />}
+            <Button
+              fullWidth
+              color="warning"
+              variant="outlined"
+              onClick={formik.handleSubmit}
+              padding={2}
+            >
+              <Typography variant="h5" marginRight={3}>
+                {" "}
+                Submit Order{" "}
+              </Typography>
+              {loading && <CircularProgress color="warning" />}
             </Button>
           </Grid>
         </form>
-
-       
       </Grid>
     );
   }
