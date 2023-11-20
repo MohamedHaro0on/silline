@@ -26,11 +26,9 @@ export const OrdersContextProvider = ({ children }) => {
     axios
       .get("/GetAllOrder.php")
       .then((res) => {
-        console.log(res.data);
         setPreviousOrders(res.data);
       })
       .catch((err) => {
-        console.log(err);
       });
   };
 
@@ -38,13 +36,18 @@ export const OrdersContextProvider = ({ children }) => {
     let price = 0;
     order &&
       order.forEach((element) => {
-        price += element.Price * element.quantity;
+        if (element.addOnPrice) {
+          price +=
+            (parseInt(element.Price) + parseInt(element.addOnPrice)) *
+            parseInt(element.quantity);
+        } else {
+          price += parseInt(element.Price) * parseInt(element.quantity);
+        }
       });
     setTotalPrice(price);
   }, [order]);
 
   const ordersHandler = (id) => {
-    console.log(id);
     // loading the data set ;
     const item = menue.filter((d) => d.MenuItemID === id);
     // making a copy of orders ;
@@ -88,17 +91,34 @@ export const OrdersContextProvider = ({ children }) => {
     setLoading(true);
     const orderDate = new Date();
     let orderNumber = previousOrders.length + 1;
+    const allAdjustments = order.map((el, index) => {
+      if (el.adjustments) {
+        return el.adjustments
+          .map((ob) => `${ob.title}  ${ob.adj.label}`)
+          .concat(
+            order[index].sideDishes &&
+              order[index].sideDishes.map((sideDish) => sideDish.ItemName)
+          );
+      }
+      else {
+        return [];
+      }
+    });
+
+ 
     axios
       .post("/createOrder_Api.php", {
-        OrderNumber : orderNumber  ,
+        OrderNumber: orderNumber,
         OrderDate: `${orderDate.getFullYear()}-${
           orderDate.getMonth() + 1
         }-${orderDate.getDate()}`,
-        Status: "Pending",
+        Status: 0,
         TotalAmount: totalPrice,
         menuItemID: JSON.stringify(order.map((el) => el.MenuItemID)),
         quantity: JSON.stringify(order.map((el) => el.quantity)),
         take_away: takeAway,
+        adjustments: JSON.stringify(allAdjustments),
+        ItemName: JSON.stringify(order.map((el) => el.ItemName)),
       })
       .then((res) => {
         setOpen(true);
@@ -108,7 +128,6 @@ export const OrdersContextProvider = ({ children }) => {
         getMenue();
         setOrder([]);
         setLoading(false);
-
       })
       .catch((err) => {
         toast.error("There were an error while placing your order ", {
@@ -120,6 +139,96 @@ export const OrdersContextProvider = ({ children }) => {
   const handleClose = () => {
     setOpen((prevState) => !prevState);
   };
+
+  // handleChange for the side Dishes ;
+  const handleSideDishes = (item, sideDish) => {
+    let temp = order.map((el) => el); //
+    const index = temp.findIndex((x) => x.MenuItemID === item.MenuItemID);
+    const orderItem = temp[index];
+
+    if (!orderItem.addOnPrice) {
+      orderItem.addOnPrice = 0;
+    }
+
+    if (!orderItem.sideDishes) {
+      orderItem.sideDishes = [];
+      orderItem.sideDishes.push(sideDish);
+    } else {
+      orderItem.sideDishes.forEach((sideDishes) => {
+        orderItem.addOnPrice -= Number(sideDishes.Price);
+      });
+
+      let repeated = orderItem.sideDishes.filter(
+        (element) => element.ItemName === sideDish.ItemName
+      );
+      if (repeated.length > 0) {
+        orderItem.sideDishes = orderItem.sideDishes.filter(
+          (element) => element.ItemName !== sideDish.ItemName
+        );
+      } else {
+        orderItem.sideDishes.push(sideDish);
+      }
+    }
+
+    orderItem.sideDishes.forEach((sideDish) => {
+      orderItem.addOnPrice += Number(sideDish.Price);
+    });
+
+    setOrder(temp);
+  };
+
+  // handle Change for Other Adjustments ;
+  const handleOrderAdjustments = (adj, title, item) => {
+    let temp = order.map((el) => el); //
+    const index = temp.findIndex((x) => x.MenuItemID === item.MenuItemID);
+  
+    const orderItem = temp[index];
+
+
+    if (!order.addOnPrice) {
+       orderItem.addOnPrice = 0;
+    } else {
+      orderItem.adjustments.forEach((adjustement) => {
+        orderItem.addOnPrice -= Number(adjustement.adj.price);
+      });
+    }
+
+    if (!orderItem.adjustments) {
+      orderItem.adjustments = [];
+      orderItem.adjustments.push({ title, adj });
+    } else {
+      let repeated = orderItem.adjustments.filter(
+        (element) => element.title === title
+      );
+      if (repeated.length > 0) {
+        let adjustmentIndex = orderItem.adjustments.findIndex(
+          (element) => element.title === title
+        );
+        orderItem.adjustments.splice(adjustmentIndex, 1);
+        orderItem.adjustments.push({ title, adj });
+      } else {
+        orderItem.adjustments.push({ title, adj });
+      }
+    }
+
+    orderItem.adjustments.forEach((adjustement) => {
+      orderItem.addOnPrice += Number(adjustement.adj.price);
+    });
+    setOrder(temp);
+  };
+
+  // Reseting Adjustments and  side Dishes ;
+  const handleAdjustmentsReset = (item) => {
+    const temp = order.map((el) => el);
+    const index = temp.indexOf((ord) => ord.itemName === item.Name);
+    const orderItem = order[index];
+    orderItem.adjustments = [];
+    orderItem.sideDishes = [];
+    orderItem.addOnPrice = 0;
+
+    setOrder(temp);
+  };
+
   return (
     <OrdersContext.Provider
       value={{
@@ -135,6 +244,9 @@ export const OrdersContextProvider = ({ children }) => {
         loading,
         adjustmentModal,
         setAdjustmentModal,
+        handleSideDishes,
+        handleOrderAdjustments,
+        handleAdjustmentsReset,
       }}
     >
       {children}

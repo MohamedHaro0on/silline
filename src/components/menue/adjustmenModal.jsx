@@ -5,9 +5,7 @@ import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import { Card, CardContent, CardMedia, Grid, Modal } from "@mui/material";
-
-
+import { Card, CardContent, CardMedia, Checkbox, Grid, Modal } from "@mui/material";
 
 
 import OrdersContext from "../../context/orders";
@@ -32,19 +30,21 @@ const style = {
   boxShadow: 24,
   p: 2,
   textAlign: "center",
-  borderRadius: "20px",
+  borderRadius: "50px",
+  border:"none"
 };
 
 const AdjustmentModal = ({ item }) => {
   const [activeStep, setActiveStep] = useState(-1);
   const [skipped, setSkipped] = useState(new Set());
-  const { adjustmentModal, setAdjustmentModal } = useContext(OrdersContext);
-  const {menue} = useContext(MenueContext);
+  
+  const { adjustmentModal, setAdjustmentModal , handleSideDishes , handleOrderAdjustments , handleAdjustmentsReset } = useContext(OrdersContext);
+
+  const { menue } = useContext(MenueContext);
 
   const isStepOptional = (step) => {
     return step === 10;
   };
-
 
   const isStepSkipped = (step) => {
     return skipped.has(step);
@@ -82,6 +82,7 @@ const AdjustmentModal = ({ item }) => {
 
   const handleReset = () => {
     setActiveStep(0);
+    handleAdjustmentsReset(item);
   };
 
 
@@ -151,14 +152,15 @@ const AdjustmentModal = ({ item }) => {
   }
   else if (activeStep === item.Titles.length) {
     Displayed = (
-      <Grid container padding = {2}>
-          {menue.filter(el=>el.CategoryName === "Sides").map(sideDish=>{
-            return (
-              <Grid item xs = {12} textAlign={"start"} padding = {2} borderBottom ="solid 2px #eee">
-                  <Typography>{sideDish.ItemName}</Typography>
-              </Grid>
-            )
-          })}
+      <Grid container padding={2}>
+        {menue.filter(el => el.CategoryName === "Sides").map(sideDish => {
+          return (
+            <Grid item xs={12} textAlign={"start"} padding={2} borderBottom="solid 2px #eee" display={"flex"} justifyContent={"space-between"}>
+              <Typography>{sideDish.ItemName}</Typography>
+              <FormControlLabel control={<Checkbox value={sideDish.itemName} />} label={sideDish.itemName} onChange={() => handleSideDishes(item , sideDish)} />
+            </Grid>
+          )
+        })}
       </Grid>
     )
   }
@@ -173,13 +175,21 @@ const AdjustmentModal = ({ item }) => {
             <Grid padding={2} item xs={12}>
               <RadioGroup
                 aria-labelledby={item.adjustedTitles[item.Titles[activeStep]].adjustmentInfo[0].label}
-                name={`item.adjustedTitles[item.Titles[activeStep]].adjustmentInfo[0]`}
+                name={`item.adjustedTitles[item.Titles[${activeStep}]].adjustmentInfo[0]`}
                 className="radioGroup"
               >
-                {item.adjustedTitles[item.Titles[activeStep]].adjustmentInfo.map(({ label, price }) => {
+                {item.adjustedTitles[item.Titles[activeStep]].adjustmentInfo.map((adj) => {
                   return (
-                    <Grid item xs={12} padding={2} borderBottom={"solid 2px #eee"}>
-                      <FormControlLabel className="formControl" labelPlacement="start" value={label} control={<Radio />} label={label} />
+                    <Grid item xs={12} padding={2} borderBottom={"solid 2px #eee"} key = {adj.title + adj.label}>
+                      <FormControlLabel
+                        className="formControl"
+                        labelPlacement="start"
+                        value={adj.label}
+                        control={<Radio />}
+                        
+                        label={adj.label}
+                        onChange={(e) => handleOrderAdjustments(adj, item.Titles[activeStep] , item ) }
+                      />
                     </Grid>
                   )
                 })}
@@ -192,6 +202,7 @@ const AdjustmentModal = ({ item }) => {
   }
 
 
+  // eslint-disable-next-line array-callback-return
   let steps = Array.apply(null, Array(item.Titles.length + 1)).map(function () { })
 
   return (
@@ -202,7 +213,7 @@ const AdjustmentModal = ({ item }) => {
       aria-describedby="modal-modal-description"
     >
 
-      <Box sx={style}>
+      <Box  sx={style}>
         <Grid item xs={12} padding={2}>
           <Typography variant="h5"> {item && item.ItemName}</Typography>
         </Grid>
@@ -239,14 +250,14 @@ const AdjustmentModal = ({ item }) => {
 
             {/* Next , Back , Skip , Submit Buttons */}
             <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
-              <Button
+              {/* <Button
                 color="inherit"
                 disabled={activeStep === -1}
                 onClick={handleBack}
                 sx={{ mr: 1 }}
               >
                 Back
-              </Button>
+              </Button> */}
               <Box sx={{ flex: "1 1 auto" }} />
               {isStepOptional(activeStep) && (
                 <Button color="inherit" onClick={handleSkip} sx={{ mr: 1 }}>
