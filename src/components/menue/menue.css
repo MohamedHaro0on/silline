@@ -4,7 +4,7 @@
 }
 
 .cardContainer{
-    width : 90% ;
+    width : 80% ;
     transition: transform .5s; /* Animation */
 
 }

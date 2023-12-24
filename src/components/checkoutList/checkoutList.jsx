@@ -10,12 +10,11 @@ import {
 import React, { useContext } from "react";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import "./checkoutList.css";
 import noOrders from "../../assets/images/ordersList.png";
-import OrdersContext from "../../context/orders";
+import OrdersContext from "../../context/order";
 import API from "../../apiEndPoint";
 import orderSubmitted from "../../assets/images/orderSubmitted.png";
 
@@ -62,7 +61,7 @@ const CheckOutList = () => {
   // displayed when there are no orders .
   if (!order.length) {
     return (
-      <Grid container alignItems={"center"} minHeight={"70vh"}>
+      <Grid container className = "checkOut">
         <Box
           component="img"
           sx={{
@@ -103,7 +102,7 @@ const CheckOutList = () => {
     );
   } else {
     return (
-      <Grid container>
+      <Grid container  className = "checkOut">
         <Grid item xs={12} sm={12} md={12} lg={12}>
           <Typography variant="h4"> Your Cart </Typography>
         </Grid>
@@ -216,7 +215,7 @@ const CheckOutList = () => {
                 display={"flex"}
                 alignItems={"center"}
               >
-                {totalPrice} <AttachMoneyIcon fontSize="15px" />
+                {`${totalPrice} Kr`}
               </Typography>
             </Grid>
           </Grid>

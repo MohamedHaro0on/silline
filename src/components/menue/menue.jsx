@@ -10,12 +10,11 @@ import {
 } from "@mui/material";
 
 import MenueContext from "../../context/menue";
-import OrdersContext from "../../context/orders";
+import OrdersContext from "../../context/order";
 import "./menue.css";
 import CategoriesContext from "../../context/categories";
 import API from "../../apiEndPoint.js";
-import AdjustmentModal from "./adjustmenModal.jsx";
-import { Money, PriceChange } from "@mui/icons-material";
+import AdjustmentModal from "./adjustmentModal.jsx";
 const Menue = () => {
   const { menue } = useContext(MenueContext);
   const { cat } = useContext(CategoriesContext);
@@ -27,7 +26,6 @@ const Menue = () => {
     if (cat !== "all") {
       let temp = menue.map((el) => el);
       temp = temp.filter((el) => el.CategoryName === cat);
-      console.log(temp);
       setDisplayedItems(temp);
     } else {
       setDisplayedItems(menue);
@@ -35,7 +33,7 @@ const Menue = () => {
   }, [cat, menue]);
 
   return (
-    <Grid container display="flex" alignItems={"stretch"}>
+    <Grid container display="flex" alignItems={"stretch"} className = "itemsContainer">
       {displayedItems.length > 0 &&
         displayedItems.map(
           ({ ItemName, Image, bestSeller, MenuItemID, Price }, index) => {

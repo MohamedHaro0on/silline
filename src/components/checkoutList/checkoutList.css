@@ -77,3 +77,9 @@
 .css-1v4ccyo{
     border : none
 }
+
+.checkOut{
+    padding : 10px ;
+    position: sticky;
+    top : 0px; 
+}

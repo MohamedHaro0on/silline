@@ -4,8 +4,15 @@ import React from "react";
 import MenueContext from "./menue";
 import axios from "axios";
 import { toast } from "react-toastify";
+import API from "../apiEndPoint";
+
+
+
+
 
 const OrdersContext = createContext([]);
+
+
 
 export const OrdersContextProvider = ({ children }) => {
   const { getMenue, menue } = useContext(MenueContext);
@@ -24,12 +31,12 @@ export const OrdersContextProvider = ({ children }) => {
 
   const getPreviousOrders = () => {
     axios
-      .get("/GetAllOrder.php")
+      .get(`${API}/GetAllOrder.php`)
       .then((res) => {
         setPreviousOrders(res.data);
+        console.log(res.data);
       })
-      .catch((err) => {
-      });
+      .catch((err) => {});
   };
 
   useEffect(() => {
@@ -87,8 +94,9 @@ export const OrdersContextProvider = ({ children }) => {
     setOrder(temp);
   };
 
-  const submitOrder = ({ takeAway }) => {
+  const submitOrder = async ({ takeAway }) => {
     setLoading(true);
+    // await pay();
     const orderDate = new Date();
     let orderNumber = previousOrders.length + 1;
     const allAdjustments = order.map((el, index) => {
@@ -99,28 +107,27 @@ export const OrdersContextProvider = ({ children }) => {
             order[index].sideDishes &&
               order[index].sideDishes.map((sideDish) => sideDish.ItemName)
           );
-      }
-      else {
+      } else {
         return [];
       }
     });
 
- 
     axios
-      .post("/createOrder_Api.php", {
+      .post(`${API}/createOrder_Api.php`, {
         OrderNumber: orderNumber,
         OrderDate: `${orderDate.getFullYear()}-${
           orderDate.getMonth() + 1
         }-${orderDate.getDate()}`,
-        Status: 0,
         TotalAmount: totalPrice,
         menuItemID: JSON.stringify(order.map((el) => el.MenuItemID)),
         quantity: JSON.stringify(order.map((el) => el.quantity)),
         take_away: takeAway,
         adjustments: JSON.stringify(allAdjustments),
         ItemName: JSON.stringify(order.map((el) => el.ItemName)),
+        status: 1,
       })
       .then((res) => {
+        console.log(res.data);
         setOpen(true);
         setOrderNumber(orderNumber);
         setLoading(false);
@@ -181,12 +188,11 @@ export const OrdersContextProvider = ({ children }) => {
   const handleOrderAdjustments = (adj, title, item) => {
     let temp = order.map((el) => el); //
     const index = temp.findIndex((x) => x.MenuItemID === item.MenuItemID);
-  
+
     const orderItem = temp[index];
 
-
     if (!order.addOnPrice) {
-       orderItem.addOnPrice = 0;
+      orderItem.addOnPrice = 0;
     } else {
       orderItem.adjustments.forEach((adjustement) => {
         orderItem.addOnPrice -= Number(adjustement.adj.price);

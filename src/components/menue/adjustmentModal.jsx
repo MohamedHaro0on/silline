@@ -8,7 +8,7 @@ import Typography from "@mui/material/Typography";
 import { Card, CardContent, CardMedia, Checkbox, Grid, Modal } from "@mui/material";
 
 
-import OrdersContext from "../../context/orders";
+import OrdersContext from "../../context/order";
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControl from '@mui/material/FormControl';
@@ -31,19 +31,18 @@ const style = {
   p: 2,
   textAlign: "center",
   borderRadius: "50px",
-  border:"none"
+  border: "none"
 };
 
 const AdjustmentModal = ({ item }) => {
   const [activeStep, setActiveStep] = useState(-1);
   const [skipped, setSkipped] = useState(new Set());
-  
-  const { adjustmentModal, setAdjustmentModal , handleSideDishes , handleOrderAdjustments , handleAdjustmentsReset } = useContext(OrdersContext);
+  const { order, adjustmentModal, setAdjustmentModal, handleSideDishes, handleOrderAdjustments, handleAdjustmentsReset } = useContext(OrdersContext);
 
   const { menue } = useContext(MenueContext);
 
   const isStepOptional = (step) => {
-    return step === 10;
+    return step > item.Titles.length;
   };
 
   const isStepSkipped = (step) => {
@@ -51,14 +50,19 @@ const AdjustmentModal = ({ item }) => {
   };
 
   const handleNext = () => {
-    let newSkipped = skipped;
-    if (isStepSkipped(activeStep)) {
-      newSkipped = new Set(newSkipped.values());
-      newSkipped.delete(activeStep);
+    if (item.Titles.length === activeStep) {
+      setAdjustmentModal(false)
     }
+    else {
+      let newSkipped = skipped;
+      if (isStepSkipped(activeStep)) {
+        newSkipped = new Set(newSkipped.values());
+        newSkipped.delete(activeStep);
+      }
 
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    setSkipped(newSkipped);
+      setActiveStep((prevActiveStep) => prevActiveStep + 1);
+      setSkipped(newSkipped);
+    }
   };
 
   const handleBack = () => {
@@ -88,7 +92,8 @@ const AdjustmentModal = ({ item }) => {
 
   let Displayed = null;
   if (activeStep === -1) {
-    let { MenuItemID, ItemName, bestSeller, Image, Description } = item;
+    let { MenuItemID, ItemName, bestSeller, Image, Description, AllergyInfo } = item;
+    console.log(item);
     Displayed = (
       <Grid>
         <Grid
@@ -133,6 +138,16 @@ const AdjustmentModal = ({ item }) => {
                     {Description}
                   </Typography>
                 </Grid>
+                <Grid item xs={12}>
+                  <Typography
+                    gutterBottom
+                    variant="h6"
+                    component="div"
+                    textAlign={"left"}
+                  >
+                    Allergy  : {AllergyInfo}
+                  </Typography>
+                </Grid>
               </Grid>
               {Boolean(bestSeller) && (
                 <Typography
@@ -156,8 +171,19 @@ const AdjustmentModal = ({ item }) => {
         {menue.filter(el => el.CategoryName === "Sides").map(sideDish => {
           return (
             <Grid item xs={12} textAlign={"start"} padding={2} borderBottom="solid 2px #eee" display={"flex"} justifyContent={"space-between"}>
+              <div>
               <Typography>{sideDish.ItemName}</Typography>
-              <FormControlLabel control={<Checkbox value={sideDish.itemName} />} label={sideDish.itemName} onChange={() => handleSideDishes(item , sideDish)} />
+              <Typography variant="h6"  fontSize={"1rem"} color={"error"}> + {sideDish.Price} Kr </Typography>
+              </div>
+              <FormControlLabel
+                control={<Checkbox value={sideDish.itemName}
+                  defaultValue={sideDish.itemName}
+                />
+                }
+                label={sideDish.itemName}
+                onChange={() => handleSideDishes(item, sideDish)} />
+              
+
             </Grid>
           )
         })}
@@ -175,21 +201,33 @@ const AdjustmentModal = ({ item }) => {
             <Grid padding={2} item xs={12}>
               <RadioGroup
                 aria-labelledby={item.adjustedTitles[item.Titles[activeStep]].adjustmentInfo[0].label}
-                name={`item.adjustedTitles[item.Titles[${activeStep}]].adjustmentInfo[0]`}
+                name={`item.adjustedTitles[item.Titles[${activeStep}]].adjustmentInfo[0].label`}
                 className="radioGroup"
+                defaultChecked={`item.adjustedTitles[item.Titles[${activeStep}]].adjustmentInfo[0].label`}
               >
                 {item.adjustedTitles[item.Titles[activeStep]].adjustmentInfo.map((adj) => {
+                  let temp = order.map((el) => el); //
+                  const index = temp.findIndex((x) => x.MenuItemID === item.MenuItemID);
+                  const { adjustments } = temp[index];
+                  const currentAdjustment = adjustments && adjustments.filter(el => el.title === item.Titles[activeStep]);
+                  console.log(adj);
                   return (
-                    <Grid item xs={12} padding={2} borderBottom={"solid 2px #eee"} key = {adj.title + adj.label}>
+                    <Grid item xs={12} padding={2} borderBottom={"solid 2px #eee"} key={adj.title + adj.label}>
                       <FormControlLabel
                         className="formControl"
                         labelPlacement="start"
                         value={adj.label}
-                        control={<Radio />}
-                        
+                        control={
+                          <Radio
+                            defaultValue={adj.label}
+                            checked={currentAdjustment && currentAdjustment[0] && currentAdjustment[0].adj.label === adj.label}
+                          />}
                         label={adj.label}
-                        onChange={(e) => handleOrderAdjustments(adj, item.Titles[activeStep] , item ) }
+                        onChange={(e) => {
+                          handleOrderAdjustments(adj, item.Titles[activeStep], item)
+                        }}
                       />
+                      <Typography variant="h6" paddingLeft={2} fontSize={"1rem"} color={"error"}> + {adj.price} Kr </Typography>
                     </Grid>
                   )
                 })}
@@ -213,7 +251,7 @@ const AdjustmentModal = ({ item }) => {
       aria-describedby="modal-modal-description"
     >
 
-      <Box  sx={style}>
+      <Box sx={style}>
         <Grid item xs={12} padding={2}>
           <Typography variant="h5"> {item && item.ItemName}</Typography>
         </Grid>
@@ -234,43 +272,31 @@ const AdjustmentModal = ({ item }) => {
         </Stepper>
 
 
-        {activeStep >= steps.length ? (
-          <Fragment>
-            <Typography sx={{ mt: 2, mb: 1 }}>
-              All steps completed - you&apos;re finished
-            </Typography>
-            <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
-              <Box sx={{ flex: "1 1 auto" }} />
-              <Button onClick={handleReset}>Reset</Button>
-            </Box>
-          </Fragment>
-        ) : (
-          <Fragment>
-            {Displayed}
+        <Fragment>
+          {Displayed}
 
-            {/* Next , Back , Skip , Submit Buttons */}
-            <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
-              {/* <Button
-                color="inherit"
-                disabled={activeStep === -1}
-                onClick={handleBack}
-                sx={{ mr: 1 }}
-              >
-                Back
-              </Button> */}
-              <Box sx={{ flex: "1 1 auto" }} />
-              {isStepOptional(activeStep) && (
-                <Button color="inherit" onClick={handleSkip} sx={{ mr: 1 }}>
-                  Skip
-                </Button>
-              )}
-
-              <Button onClick={handleNext}>
-                {activeStep === item.Titles.length ? "Finish" : "Next"}
+          {/* Next , Back , Skip , Submit Buttons */}
+          <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
+            <Button
+              color="inherit"
+              disabled={activeStep === -1}
+              onClick={handleBack}
+              sx={{ mr: 1 }}
+            >
+              Back
+            </Button>
+            <Box sx={{ flex: "1 1 auto" }} />
+            {isStepOptional(activeStep) && (
+              <Button color="inherit" onClick={handleSkip} sx={{ mr: 1 }}>
+                Skip
               </Button>
-            </Box>
-          </Fragment>
-        )}
+            )}
+
+            <Button onClick={handleNext}>
+              {activeStep === item.Titles.length ? "Finish" : "Next"}
+            </Button>
+          </Box>
+        </Fragment>
       </Box>
     </Modal>
   );

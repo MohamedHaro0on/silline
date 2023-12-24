@@ -4,10 +4,10 @@ import CheckOutList from "./components/checkoutList/checkoutList";
 import { useContext } from "react";
 import CategoriesContext from "./context/categories";
 import Menue from "./components/menue/menue";
-const HomePage = () => {
+const Order = () => {
   const { cat } = useContext(CategoriesContext);
   return (
-    <Grid container padding={3}>
+    <Grid container padding={3} className = "mainContainer">
       {/* Select category */}
       <Grid item xs={12} sm={12} lg={12} md={12}>
         <Categories />
@@ -36,6 +36,7 @@ const HomePage = () => {
           bgcolor={"#eee"}
           borderRadius={"20px"}
           padding={3}
+          className = "checkOutContainer"
         >
           <CheckOutList />
         </Grid>
@@ -44,4 +45,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default Order;
