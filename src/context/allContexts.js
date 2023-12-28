@@ -1,6 +1,6 @@
 import { CategroiesContextProvider } from "./categories";
 import { MenueContextProvider } from "./menue";
-import { OrdersContextProvider } from "./order";
+import { OrdersContextProvider } from "./orders";
 
 const AllContextsProvider = ({ children }) => {
   return (

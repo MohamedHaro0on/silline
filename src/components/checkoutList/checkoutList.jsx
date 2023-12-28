@@ -1,3 +1,4 @@
+/* eslint-disable no-mixed-operators */
 import {
   Box,
   Button,
@@ -10,14 +11,11 @@ import {
 import React, { useContext } from "react";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import { useFormik } from "formik";
-import * as yup from "yup";
 import "./checkoutList.css";
 import noOrders from "../../assets/images/ordersList.png";
-import OrdersContext from "../../context/order";
+import OrdersContext from "../../context/orders";
 import API from "../../apiEndPoint";
-import orderSubmitted from "../../assets/images/orderSubmitted.png";
-
+import Vipps from "../../assets/images/Vipps.png"
 
 
 const style = {
@@ -25,12 +23,13 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 400,
+  width: 600,
   bgcolor: "background.paper",
   boxShadow: 24,
   p: 4,
   textAlign: "center",
-  borderRadius : "20px"
+  borderRadius: "20px",
+  borderColor: "none"
 };
 
 
@@ -41,27 +40,20 @@ const CheckOutList = () => {
     inCreamentQuantity,
     deCreamentQuantity,
     totalPrice,
-    submitOrder,
     open,
+    handleOpen,
     handleClose,
-    orderNumber,
     loading,
+    getPaymentURL,
+    takeAway,
+    setTakeAway,
+    cancelOrder
   } = useContext(OrdersContext);
-  const formik = useFormik({
-    initialValues: {
-      takeAway: false,
-    },
-    validationSchema: yup.object({
-      takeAway: yup.boolean().oneOf([true, false]),
-    }),
 
-    onSubmit: (data) => submitOrder(data),
-  });
 
-  // displayed when there are no orders .
   if (!order.length) {
     return (
-      <Grid container className = "checkOut">
+      <Grid container className="checkOut">
         <Box
           component="img"
           sx={{
@@ -70,43 +62,16 @@ const CheckOutList = () => {
           alt="No orders to view"
           src={noOrders}
         />
-        <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={style}>
-            <Typography
-              id="modal-modal-title"
-              variant="h5"
-              component="h2"
-              fontWeight="bolder"
-              marginBottom={4}
-            >
-              your order id : {orderNumber}
-            </Typography>
-            <Box
-              component="img"
-              sx={{
-                height: 200,
-                maxHeight: { xs: 233, md: 167 },
-                maxWidth: { xs: 350, md: 250 },
-              }}
-              alt="order was submitted"
-              src={orderSubmitted}
-            />
-          </Box>
-        </Modal>
+
       </Grid>
     );
   } else {
     return (
-      <Grid container  className = "checkOut">
+      <Grid container className="checkOut">
         <Grid item xs={12} sm={12} md={12} lg={12}>
           <Typography variant="h4"> Your Cart </Typography>
         </Grid>
-        <form onSubmit={formik.handleSubmit}>
+        <form >
           {order &&
             order.map(
               ({ ItemName, Image, MenuItemID, Description, quantity }) => {
@@ -194,7 +159,8 @@ const CheckOutList = () => {
               <TextField
                 type="checkbox"
                 name={"takeAway"}
-                onChange={formik.handleChange}
+                value={takeAway}
+                onChange={() => { setTakeAway(prevState => !prevState) }}
                 className="checkbox"
               />
               <Typography paddingLeft={2} typography={"h6"}>
@@ -225,7 +191,7 @@ const CheckOutList = () => {
               fullWidth
               color="warning"
               variant="outlined"
-              onClick={formik.handleSubmit}
+              onClick={handleOpen}
               padding={2}
             >
               <Typography variant="h5" marginRight={3}>
@@ -236,7 +202,73 @@ const CheckOutList = () => {
             </Button>
           </Grid>
         </form>
-      </Grid>
+
+
+        <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style}>
+            <Typography
+              id="modal-modal-title"
+              variant="h5"
+              component="h2"
+              fontWeight="bolder"
+              marginBottom={4}
+              textAlign={"start"}
+            >
+              you ordered :
+            </Typography>
+            <Grid item xs={12}>
+              <ul>{order && order.length > 0 && order.map((({ ItemName, quantity, adjustments, sideDishes }) => {
+                console.log(ItemName, quantity, adjustments, sideDishes)
+                return (
+                  <li key={ItemName} style={{ padding: "10px" }}>
+                    <Typography variant="p">
+                      <strong>({quantity}) &nbsp; {ItemName} . </strong>
+                    </Typography>
+                    {<ul style={{ textAlign: "start", paddingTop: "10px" }}>
+                      {sideDishes && sideDishes.map((sideDish) => <li key={sideDish}>{sideDish.ItemName} . </li>)}
+                      {adjustments && adjustments.map((adjustment) => <li key={adjustment.title}>{adjustment.title} : {adjustment.adj.label} . </li>)}
+                    </ul>}
+                  </li>
+                )
+              })
+              )}
+              </ul>
+            </Grid>
+            <Grid container padding={4} >
+              <Grid item xs={12} display={"flex"} justifyContent={"space-between"} alignItems={"center"}>
+                <Typography variant="h6" > Total Price </Typography>
+                <Typography variant="h6" color="error"> {totalPrice} NOK </Typography>
+              </Grid>
+            </Grid>
+            <Grid item xs={12} sm={12} textAlign={"center"} display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
+              <Button color="error" fullWidth variant="contained" padding={2} onClick={() => { cancelOrder(); handleClose() }}> Cancel Order </Button>
+            </Grid>
+            <Grid item xs={12} sm={12} marginTop={3}>
+              <Button
+                fullWidth
+                onClick={() => { getPaymentURL(); handleClose(); }}
+                color="warning"
+                style={{ borderColor: "#ff5b24", color: "#ff5b24", display: "flex", justifyContent: "center", textAlign: "center" }}
+                variant="outlined">
+                <Box component={"img"}
+                  sx={{
+                    maxWidth: "20px",
+                    padding: 1
+                  }} src={Vipps} />
+
+
+                <Typography variant={"span"} width={"fit-content"} > Complete Payment with Vipps</Typography>
+              </Button>
+            </Grid>
+          </Box>
+        </Modal>
+
+      </Grid >
     );
   }
 };

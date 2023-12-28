@@ -1,6 +1,5 @@
 import axios from "axios";
 import { useState, createContext, useEffect } from "react";
-import API from "../apiEndPoint";
 
 export const MenueContext = createContext();
 
@@ -12,7 +11,7 @@ export const MenueContextProvider = ({ children }) => {
   }, []);
   const getMenue = () => {
     axios
-      .get(`${API}/SelectALLitemMenu.php`)
+      .get("/SelectALLitemMenu.php")
       .then((res) => {
         console.log(res.data);
         setMenue(res.data);

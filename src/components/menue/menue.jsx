@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 
 import MenueContext from "../../context/menue";
-import OrdersContext from "../../context/order";
+import OrdersContext from "../../context/orders";
 import "./menue.css";
 import CategoriesContext from "../../context/categories";
 import API from "../../apiEndPoint.js";
@@ -46,7 +46,7 @@ const Menue = () => {
                 md={6}
                 lg={6}
                 xl={4}
-                padding={4}
+                padding={2}
                 alignItems={"stretch"}
                 display={"flex"}
                 className="cardContainer"
@@ -65,24 +65,24 @@ const Menue = () => {
                     />
                     <CardContent className="cardContent">
                       <Grid container>
-                        <Grid item xs={9} sm={9} md={9} lg={9}>
+                        <Grid item xs={12} padding ={0}>
                           <Typography
                             gutterBottom
-                            variant="h6"
+                            variant="h5"
                             component="h5"
                             textAlign={"left"}
                           >
                             {ItemName}
                           </Typography>
                         </Grid>
-                        <Grid item xs={3} sm={3} md={3} lg={3}>
+                        <Grid item xs={12} sm={12} md={12} lg={12} textAlign={"end"} padding = {0}>
                           <Typography
                             gutterBottom
                             variant="h6"
                             component="div"
                             color="error"
                           >
-                            {Price}
+                            {Price} NOK
                           </Typography>
                         </Grid>
                       </Grid>

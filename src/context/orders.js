@@ -4,18 +4,12 @@ import React from "react";
 import MenueContext from "./menue";
 import axios from "axios";
 import { toast } from "react-toastify";
-import API from "../apiEndPoint";
-
-
-
-
+import { useNavigate } from "react-router-dom";
 
 const OrdersContext = createContext([]);
 
-
-
 export const OrdersContextProvider = ({ children }) => {
-  const { getMenue, menue } = useContext(MenueContext);
+  const { menue } = useContext(MenueContext);
 
   const [order, setOrder] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
@@ -24,6 +18,9 @@ export const OrdersContextProvider = ({ children }) => {
   const [orderNumber, setOrderNumber] = useState(null);
   const [loading, setLoading] = useState(false);
   const [adjustmentModal, setAdjustmentModal] = useState(false);
+  const [takeAway, setTakeAway] = useState(false);
+  const [paymentStatus , setPaymentStatus] = useState(null)
+  const history = useNavigate();
 
   useEffect(() => {
     getPreviousOrders();
@@ -31,10 +28,13 @@ export const OrdersContextProvider = ({ children }) => {
 
   const getPreviousOrders = () => {
     axios
-      .get(`${API}/GetAllOrder.php`)
+      .get("/GetAllOrder.php")
       .then((res) => {
-        setPreviousOrders(res.data);
-        console.log(res.data);
+        if (res.data.status === 0) {
+          setPreviousOrders([]);
+        } else {
+          setPreviousOrders(res.data);
+        }
       })
       .catch((err) => {});
   };
@@ -94,57 +94,87 @@ export const OrdersContextProvider = ({ children }) => {
     setOrder(temp);
   };
 
-  const submitOrder = async ({ takeAway }) => {
-    setLoading(true);
-    // await pay();
-    const orderDate = new Date();
-    let orderNumber = previousOrders.length + 1;
-    const allAdjustments = order.map((el, index) => {
-      if (el.adjustments) {
-        return el.adjustments
-          .map((ob) => `${ob.title}  ${ob.adj.label}`)
-          .concat(
-            order[index].sideDishes &&
-              order[index].sideDishes.map((sideDish) => sideDish.ItemName)
-          );
-      } else {
-        return [];
-      }
-    });
-
+  const getPaymentURL = () => {
+    setLoading(true)
     axios
-      .post(`${API}/createOrder_Api.php`, {
-        OrderNumber: orderNumber,
-        OrderDate: `${orderDate.getFullYear()}-${
-          orderDate.getMonth() + 1
-        }-${orderDate.getDate()}`,
+      .post("https://silinbakeri.net/php/payment/Pay.php", {
         TotalAmount: totalPrice,
-        menuItemID: JSON.stringify(order.map((el) => el.MenuItemID)),
-        quantity: JSON.stringify(order.map((el) => el.quantity)),
-        take_away: takeAway,
-        adjustments: JSON.stringify(allAdjustments),
-        ItemName: JSON.stringify(order.map((el) => el.ItemName)),
-        status: 1,
       })
       .then((res) => {
-        console.log(res.data);
-        setOpen(true);
-        setOrderNumber(orderNumber);
-        setLoading(false);
-        getPreviousOrders();
-        getMenue();
+        localStorage.setItem("order", JSON.stringify(order));
+        localStorage.setItem("orderID", JSON.stringify(res.data.order_id));
         setOrder([]);
-        setLoading(false);
+        setLoading(false)
+        window.open(res.data.payment_url, "_blank");
       })
       .catch((err) => {
-        toast.error("There were an error while placing your order ", {
-          position: toast.POSITION.TOP_RIGHT,
-        });
+        console.log("this is the error ", err);
       });
+  };
+  const submitOrder = () => {
+    setLoading(true);
+    const savedOrder = JSON.parse(localStorage.getItem("order"));
+    const savedOrderId = JSON.parse(localStorage.getItem("orderID"));
+    console.log(
+      "this is the saved Order , ",
+      savedOrder,
+      " this is the order id : ",
+      savedOrderId
+    );
+
+    if (savedOrder && savedOrder.length > 0 && savedOrderId) {
+      let orderNumber = previousOrders.length + 1;
+      const orderDate = new Date();
+      
+      const allAdjustments = savedOrder.map((el, index) => {
+        if (el.adjustments) {
+          return el.adjustments
+            .map((ob) => `${ob.title} : ${ob.adj.label}`)
+            .concat(
+              savedOrder[index].sideDishes &&
+                savedOrder[index].sideDishes.map(
+                  (sideDish) => sideDish.ItemName
+                )
+            );
+        } else {
+          return [];
+        }
+      });
+
+      axios
+        .post("https://silinbakeri.net/php/payment/insertOrder.php", {
+          OrderNumber: orderNumber,
+          orderIdVipps: savedOrderId,
+          OrderDate: `${orderDate.getFullYear()}-${
+            orderDate.getMonth() + 1
+          }-${orderDate.getDate()}`,
+          Status: 1,
+          TotalAmount: totalPrice,
+          menuItemID: JSON.stringify(savedOrder.map((el) => el.MenuItemID)),
+          quantity: JSON.stringify(savedOrder.map((el) => el.quantity)),
+          take_away: takeAway,
+          ItemName: JSON.stringify(savedOrder.map((el) => el.ItemName)),
+          adjustments: JSON.stringify(allAdjustments),
+        })
+        .then((res) => {
+          console.log(res);
+          setOrderNumber(orderNumber);
+          setPaymentStatus(res.data.payment_status);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.log("this is the error", err);
+        });
+    } else {
+      history("/");
+    }
   };
 
   const handleClose = () => {
-    setOpen((prevState) => !prevState);
+    setOpen(false);
+  };
+  const handleOpen = () => {
+    setOpen(true);
   };
 
   // handleChange for the side Dishes ;
@@ -235,6 +265,9 @@ export const OrdersContextProvider = ({ children }) => {
     setOrder(temp);
   };
 
+  const cancelOrder = () => {
+    setOrder([]);
+  };
   return (
     <OrdersContext.Provider
       value={{
@@ -246,6 +279,7 @@ export const OrdersContextProvider = ({ children }) => {
         submitOrder,
         handleClose,
         open,
+        handleOpen,
         orderNumber,
         loading,
         adjustmentModal,
@@ -253,6 +287,11 @@ export const OrdersContextProvider = ({ children }) => {
         handleSideDishes,
         handleOrderAdjustments,
         handleAdjustmentsReset,
+        getPaymentURL,
+        takeAway,
+        setTakeAway,
+        cancelOrder,
+        paymentStatus,
       }}
     >
       {children}

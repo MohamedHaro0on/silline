@@ -2,7 +2,6 @@
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
 import React from "react";
-import API from "../apiEndPoint";
 
 const CategoriesContext = createContext([]);
 
@@ -11,7 +10,7 @@ export const CategroiesContextProvider = ({ children }) => {
   const [categories, setCategories] = useState([]);
   useEffect(() => {
     axios
-      .get(`${API}/selectAllCategory.php`)
+      .get("/selectAllCategory.php")
       .then((res) => {
         console.log(res.data);
         setCategories(res.data);

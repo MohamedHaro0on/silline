@@ -2,3 +2,7 @@
 .mainContainer{
   position : relative ; 
 }
+.checkbox{
+  border : none ; 
+  outline : none ;
+}

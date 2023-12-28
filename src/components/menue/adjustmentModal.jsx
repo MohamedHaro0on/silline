@@ -8,7 +8,7 @@ import Typography from "@mui/material/Typography";
 import { Card, CardContent, CardMedia, Checkbox, Grid, Modal } from "@mui/material";
 
 
-import OrdersContext from "../../context/order";
+import OrdersContext from "../../context/orders";
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControl from '@mui/material/FormControl';

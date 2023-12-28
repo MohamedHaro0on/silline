@@ -4,7 +4,7 @@ import CheckOutList from "./components/checkoutList/checkoutList";
 import { useContext } from "react";
 import CategoriesContext from "./context/categories";
 import Menue from "./components/menue/menue";
-const Order = () => {
+const HomePage = () => {
   const { cat } = useContext(CategoriesContext);
   return (
     <Grid container padding={3} className = "mainContainer">
@@ -45,4 +45,4 @@ const Order = () => {
   );
 };
 
-export default Order;
+export default HomePage;
