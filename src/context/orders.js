@@ -147,7 +147,6 @@ export const OrdersContextProvider = ({ children }) => {
             orderDate.getMonth() + 1
           }-${orderDate.getDate()}  ${orderDate.getHours()%12}:${orderDate.getMinutes()}:${orderDate.getSeconds()}`,
           Status: 1,
-          TotalAmount: totalPrice,
           menuItemID: JSON.stringify(savedOrder.map((el) => el.MenuItemID)),
           quantity: JSON.stringify(savedOrder.map((el) => el.quantity)),
           take_away: savedTakeAway === true ? 1 : 0 ,
