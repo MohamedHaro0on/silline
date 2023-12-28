@@ -3,8 +3,7 @@ import React from "react";
 
 import MenueContext from "./menue";
 import axios from "axios";
-import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { json, useNavigate } from "react-router-dom";
 
 const OrdersContext = createContext([]);
 
@@ -103,28 +102,28 @@ export const OrdersContextProvider = ({ children }) => {
       .then((res) => {
         localStorage.setItem("order", JSON.stringify(order));
         localStorage.setItem("orderID", JSON.stringify(res.data.order_id));
+        localStorage.setItem("takeAway", JSON.stringify(takeAway));
+
         setOrder([]);
         setLoading(false)
         window.open(res.data.payment_url, "_blank");
       })
       .catch((err) => {
-        console.log("this is the error ", err);
       });
   };
   const submitOrder = () => {
     setLoading(true);
     const savedOrder = JSON.parse(localStorage.getItem("order"));
     const savedOrderId = JSON.parse(localStorage.getItem("orderID"));
-    console.log(
-      "this is the saved Order , ",
-      savedOrder,
-      " this is the order id : ",
-      savedOrderId
-    );
+    const savedTakeAway = JSON.parse(localStorage.getItem("takeAway"));
+
+
+
 
     if (savedOrder && savedOrder.length > 0 && savedOrderId) {
       let orderNumber = previousOrders.length + 1;
       const orderDate = new Date();
+
       
       const allAdjustments = savedOrder.map((el, index) => {
         if (el.adjustments) {
@@ -140,30 +139,28 @@ export const OrdersContextProvider = ({ children }) => {
           return [];
         }
       });
-
       axios
         .post("https://silinbakeri.net/php/payment/insertOrder.php", {
           OrderNumber: orderNumber,
           orderIdVipps: savedOrderId,
           OrderDate: `${orderDate.getFullYear()}-${
             orderDate.getMonth() + 1
-          }-${orderDate.getDate()}`,
+          }-${orderDate.getDate()}  ${orderDate.getHours()%12}:${orderDate.getMinutes()}:${orderDate.getSeconds()}`,
           Status: 1,
           TotalAmount: totalPrice,
           menuItemID: JSON.stringify(savedOrder.map((el) => el.MenuItemID)),
           quantity: JSON.stringify(savedOrder.map((el) => el.quantity)),
-          take_away: takeAway,
+          take_away: savedTakeAway === true ? 1 : 0 ,
           ItemName: JSON.stringify(savedOrder.map((el) => el.ItemName)),
           adjustments: JSON.stringify(allAdjustments),
         })
         .then((res) => {
-          console.log(res);
           setOrderNumber(orderNumber);
           setPaymentStatus(res.data.payment_status);
           setLoading(false);
         })
         .catch((err) => {
-          console.log("this is the error", err);
+          
         });
     } else {
       history("/");

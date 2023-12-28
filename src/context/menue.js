@@ -13,7 +13,6 @@ export const MenueContextProvider = ({ children }) => {
     axios
       .get("/SelectALLitemMenu.php")
       .then((res) => {
-        console.log(res.data);
         setMenue(res.data);
       })
       .catch((err) => {});

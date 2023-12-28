@@ -93,7 +93,6 @@ const AdjustmentModal = ({ item }) => {
   let Displayed = null;
   if (activeStep === -1) {
     let { MenuItemID, ItemName, bestSeller, Image, Description, AllergyInfo } = item;
-    console.log(item);
     Displayed = (
       <Grid>
         <Grid
@@ -210,7 +209,6 @@ const AdjustmentModal = ({ item }) => {
                   const index = temp.findIndex((x) => x.MenuItemID === item.MenuItemID);
                   const { adjustments } = temp[index];
                   const currentAdjustment = adjustments && adjustments.filter(el => el.title === item.Titles[activeStep]);
-                  console.log(adj);
                   return (
                     <Grid item xs={12} padding={2} borderBottom={"solid 2px #eee"} key={adj.title + adj.label}>
                       <FormControlLabel

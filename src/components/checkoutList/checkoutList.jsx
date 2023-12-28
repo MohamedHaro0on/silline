@@ -223,7 +223,6 @@ const CheckOutList = () => {
             </Typography>
             <Grid item xs={12}>
               <ul>{order && order.length > 0 && order.map((({ ItemName, quantity, adjustments, sideDishes }) => {
-                console.log(ItemName, quantity, adjustments, sideDishes)
                 return (
                   <li key={ItemName} style={{ padding: "10px" }}>
                     <Typography variant="p">

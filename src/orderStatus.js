@@ -16,6 +16,8 @@ function OrderStatus() {
   useEffect(() => {
     submitOrder();
   }, []);
+
+  
   if (!loading) {
     let output,
       number,
