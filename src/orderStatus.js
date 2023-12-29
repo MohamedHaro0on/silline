@@ -11,10 +11,10 @@ import ClearIcon from "@mui/icons-material/Clear";
 import CheckIcon from "@mui/icons-material/Check";
 
 function OrderStatus() {
-  const { submitOrder, orderNumber, paymentStatus, loading } =
+  const { submitOrder, orderNumber, paymentStatus, loading  } =
     useContext(OrdersContext);
-  useEffect(() => {
-    submitOrder();
+  useEffect( () =>{
+     submitOrder();
   }, []);
 
   

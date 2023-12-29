@@ -83,3 +83,19 @@
     position: sticky;
     top : 0px; 
 }
+
+
+.modal{
+    position: absolute;
+    top: "50%";
+    left: "50%";
+    transform: "translate(-50%; -50%)";
+    max-width: "80%";
+    min-width:400;
+    background-color: "background.paper";
+    box-shadow: 24;
+    padding: 20px;
+    text-align: "center";
+    border-radius: "20px";
+    border-color: "none"
+}

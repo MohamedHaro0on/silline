@@ -3,7 +3,7 @@ import React from "react";
 
 import MenueContext from "./menue";
 import axios from "axios";
-import { json, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const OrdersContext = createContext([]);
 
@@ -18,7 +18,7 @@ export const OrdersContextProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [adjustmentModal, setAdjustmentModal] = useState(false);
   const [takeAway, setTakeAway] = useState(false);
-  const [paymentStatus , setPaymentStatus] = useState(null)
+  const [paymentStatus, setPaymentStatus] = useState(null);
   const history = useNavigate();
 
   useEffect(() => {
@@ -94,7 +94,7 @@ export const OrdersContextProvider = ({ children }) => {
   };
 
   const getPaymentURL = () => {
-    setLoading(true)
+    setLoading(true);
     axios
       .post("https://silinbakeri.net/php/payment/Pay.php", {
         TotalAmount: totalPrice,
@@ -103,12 +103,16 @@ export const OrdersContextProvider = ({ children }) => {
         localStorage.setItem("order", JSON.stringify(order));
         localStorage.setItem("orderID", JSON.stringify(res.data.order_id));
         localStorage.setItem("takeAway", JSON.stringify(takeAway));
-
+        localStorage.setItem(
+          "orderNumber",
+          JSON.stringify(previousOrders.length + 1)
+        );
         setOrder([]);
-        setLoading(false)
+        setLoading(false);
         window.open(res.data.payment_url, "_blank");
       })
       .catch((err) => {
+        setLoading(false);
       });
   };
   const submitOrder = () => {
@@ -116,15 +120,9 @@ export const OrdersContextProvider = ({ children }) => {
     const savedOrder = JSON.parse(localStorage.getItem("order"));
     const savedOrderId = JSON.parse(localStorage.getItem("orderID"));
     const savedTakeAway = JSON.parse(localStorage.getItem("takeAway"));
-
-
-
-
+    const orderNumber = JSON.parse(localStorage.getItem("orderNumber"));
     if (savedOrder && savedOrder.length > 0 && savedOrderId) {
-      let orderNumber = previousOrders.length + 1;
       const orderDate = new Date();
-
-      
       const allAdjustments = savedOrder.map((el, index) => {
         if (el.adjustments) {
           return el.adjustments
@@ -145,11 +143,11 @@ export const OrdersContextProvider = ({ children }) => {
           orderIdVipps: savedOrderId,
           OrderDate: `${orderDate.getFullYear()}-${
             orderDate.getMonth() + 1
-          }-${orderDate.getDate()}  ${orderDate.getHours()%12}:${orderDate.getMinutes()}:${orderDate.getSeconds()}`,
+          }-${orderDate.getDate()}  ${orderDate.getHours()}:${orderDate.getMinutes()}:${orderDate.getSeconds()}`,
           Status: 1,
           menuItemID: JSON.stringify(savedOrder.map((el) => el.MenuItemID)),
           quantity: JSON.stringify(savedOrder.map((el) => el.quantity)),
-          take_away: savedTakeAway === true ? 1 : 0 ,
+          take_away: savedTakeAway === true ? 1 : 0,
           ItemName: JSON.stringify(savedOrder.map((el) => el.ItemName)),
           adjustments: JSON.stringify(allAdjustments),
         })
@@ -158,9 +156,7 @@ export const OrdersContextProvider = ({ children }) => {
           setPaymentStatus(res.data.payment_status);
           setLoading(false);
         })
-        .catch((err) => {
-          
-        });
+        .catch((err) => {});
     } else {
       history("/");
     }
@@ -288,6 +284,7 @@ export const OrdersContextProvider = ({ children }) => {
         setTakeAway,
         cancelOrder,
         paymentStatus,
+        getPreviousOrders,
       }}
     >
       {children}
